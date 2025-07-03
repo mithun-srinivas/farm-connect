@@ -30,7 +30,7 @@ const Reports = () => {
 
   useEffect(() => {
     applyFilters()
-  }, [goods, customers, searchTerm, dateFilter, commissionFilter])
+  }, [goods, customers, searchTerm, dateFilter, commissionFilter, activeTab])
 
   const fetchReportsData = async () => {
     try {
@@ -42,7 +42,10 @@ const Reports = () => {
         .select('*')
         .order('created_at', { ascending: false })
       
-      if (goodsError) throw goodsError
+      if (goodsError) {
+        console.error('Error fetching goods:', goodsError)
+        throw goodsError
+      }
 
       // Fetch customers data
       const { data: customersData, error: customersError } = await supabase
@@ -50,8 +53,14 @@ const Reports = () => {
         .select('*')
         .order('created_at', { ascending: false })
       
-      if (customersError) throw customersError
+      if (customersError) {
+        console.error('Error fetching customers:', customersError)
+        throw customersError
+      }
 
+      console.log('Fetched goods:', goodsData?.length || 0)
+      console.log('Fetched customers:', customersData?.length || 0)
+      
       setGoods(goodsData || [])
       setCustomers(customersData || [])
     } catch (error) {
@@ -63,6 +72,8 @@ const Reports = () => {
 
   const applyFilters = () => {
     let filtered = activeTab === 'goods' ? [...goods] : [...customers]
+    
+    console.log(`Applying filters for ${activeTab}:`, filtered.length, 'items')
     
     // Apply search filter
     if (searchTerm) {
@@ -81,6 +92,7 @@ const Reports = () => {
           )
         }
       })
+      console.log(`After search filter (${searchTerm}):`, filtered.length, 'items')
     }
 
     // Apply date filter
@@ -90,6 +102,7 @@ const Reports = () => {
         const itemDate = new Date(item.created_at)
         return itemDate.toDateString() === filterDate.toDateString()
       })
+      console.log(`After date filter (${dateFilter}):`, filtered.length, 'items')
     }
 
     // Apply commission filter (only for goods)
@@ -97,7 +110,10 @@ const Reports = () => {
       filtered = filtered.filter(item => {
         return commissionFilter === 'with' ? item.with_commission : !item.with_commission
       })
+      console.log(`After commission filter (${commissionFilter}):`, filtered.length, 'items')
     }
+
+    console.log(`Final filtered ${activeTab}:`, filtered.length, 'items')
 
     if (activeTab === 'goods') {
       setFilteredGoods(filtered)
@@ -206,6 +222,16 @@ const Reports = () => {
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </button>
+      </div>
+
+      {/* Debug Info (remove in production) */}
+      <div className="card bg-yellow-50 border-yellow-200">
+        <h3 className="font-medium text-yellow-900 mb-2">Debug Info:</h3>
+        <p className="text-sm text-yellow-700">
+          Raw Goods: {goods.length} | Raw Customers: {customers.length} | 
+          Active Tab: {activeTab} | 
+          Filtered Goods: {filteredGoods.length} | Filtered Customers: {filteredCustomers.length}
+        </p>
       </div>
 
       {/* Summary Cards */}
