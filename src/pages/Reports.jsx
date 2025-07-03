@@ -232,17 +232,6 @@ const Reports = () => {
         </button>
       </div>
 
-
-      {/* Debug Info (remove in production) */}
-      <div className="card bg-yellow-50 border-yellow-200">
-        <h3 className="font-medium text-yellow-900 mb-2">Debug Info:</h3>
-        <p className="text-sm text-yellow-700">
-          Raw Goods: {goods.length} | Raw Customers: {customers.length} | 
-          Active Tab: {activeTab} | 
-          Filtered Goods: {filteredGoods.length} | Filtered Customers: {filteredCustomers.length}
-        </p>
-      </div>
-
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="card">
