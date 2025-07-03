@@ -30,7 +30,7 @@ const Reports = () => {
 
   useEffect(() => {
     applyFilters()
-  }, [goods, customers, searchTerm, dateFilter, commissionFilter, activeTab])
+  }, [goods, customers, searchTerm, dateFilter, commissionFilter, activeTab, activeTab])
 
   const fetchReportsData = async () => {
     try {
@@ -52,6 +52,14 @@ const Reports = () => {
         .from('customers')
         .select('*')
         .order('created_at', { ascending: false })
+      
+      if (customersError) {
+        console.error('Error fetching customers:', customersError)
+        throw customersError
+      }
+
+      console.log('Fetched goods:', goodsData?.length || 0)
+      console.log('Fetched customers:', customersData?.length || 0)
       
       if (customersError) {
         console.error('Error fetching customers:', customersError)
@@ -224,6 +232,16 @@ const Reports = () => {
         </button>
       </div>
 
+
+      {/* Debug Info (remove in production) */}
+      <div className="card bg-yellow-50 border-yellow-200">
+        <h3 className="font-medium text-yellow-900 mb-2">Debug Info:</h3>
+        <p className="text-sm text-yellow-700">
+          Raw Goods: {goods.length} | Raw Customers: {customers.length} | 
+          Active Tab: {activeTab} | 
+          Filtered Goods: {filteredGoods.length} | Filtered Customers: {filteredCustomers.length}
+        </p>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
