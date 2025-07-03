@@ -193,8 +193,9 @@ const Dashboard = () => {
                   <div>
                     <p className="font-medium text-gray-900">{good.good_name}</p>
                     <p className="text-sm text-gray-600">
-                      {good.farmer_name} • {good.quantity} units
+                      {good.farmer_name} • {good.quantity} {good.units}
                     </p>
+                    <p className="text-xs text-gray-500">{good.farmer_phone}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-gray-900">

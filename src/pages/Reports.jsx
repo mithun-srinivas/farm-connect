@@ -90,7 +90,9 @@ const Reports = () => {
         if (activeTab === 'goods') {
           return (
             item.farmer_name?.toLowerCase().includes(searchLower) ||
-            item.good_name?.toLowerCase().includes(searchLower)
+            item.farmer_phone?.toLowerCase().includes(searchLower) ||
+            item.good_name?.toLowerCase().includes(searchLower) ||
+            item.units?.toLowerCase().includes(searchLower)
           )
         } else {
           return (
@@ -139,8 +141,10 @@ const Reports = () => {
       worksheetData = dataToExport.map(item => ({
         'Date': format(new Date(item.created_at), 'yyyy-MM-dd'),
         'Farmer Name': item.farmer_name,
+        'Farmer Phone': item.farmer_phone,
         'Good Name': item.good_name,
         'Quantity': item.quantity,
+        'Units': item.units,
         'Price per Unit': item.price_per_unit,
         'With Commission': item.with_commission ? 'Yes' : 'No',
         'Final Price': item.final_price,
@@ -171,10 +175,10 @@ const Reports = () => {
     let csvContent = ''
     
     if (activeTab === 'goods') {
-      csvContent = 'Date,Farmer Name,Good Name,Quantity,Price per Unit,With Commission,Final Price,Commission Amount\n'
+      csvContent = 'Date,Farmer Name,Farmer Phone,Good Name,Quantity,Units,Price per Unit,With Commission,Final Price,Commission Amount\n'
       dataToExport.forEach(item => {
         const commissionAmount = item.with_commission ? (item.quantity * item.price_per_unit * 0.1).toFixed(2) : '0.00'
-        csvContent += `${format(new Date(item.created_at), 'yyyy-MM-dd')},${item.farmer_name},${item.good_name},${item.quantity},${item.price_per_unit},${item.with_commission ? 'Yes' : 'No'},${item.final_price},${commissionAmount}\n`
+        csvContent += `${format(new Date(item.created_at), 'yyyy-MM-dd')},${item.farmer_name},${item.farmer_phone},${item.good_name},${item.quantity},${item.units},${item.price_per_unit},${item.with_commission ? 'Yes' : 'No'},${item.final_price},${commissionAmount}\n`
       })
     } else {
       csvContent = 'Date,Customer Name,Phone,Address,Goods Purchased,Price\n'
@@ -372,8 +376,10 @@ const Reports = () => {
                 <tr>
                   <th className="table-header">Date</th>
                   <th className="table-header">Farmer Name</th>
+                  <th className="table-header">Farmer Phone</th>
                   <th className="table-header">Good Name</th>
                   <th className="table-header">Quantity</th>
+                  <th className="table-header">Units</th>
                   <th className="table-header">Price/Unit</th>
                   <th className="table-header">Commission</th>
                   <th className="table-header">Final Price</th>
@@ -384,8 +390,14 @@ const Reports = () => {
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="table-cell">{format(new Date(item.created_at), 'MMM dd, yyyy')}</td>
                     <td className="table-cell">{item.farmer_name}</td>
+                    <td className="table-cell">{item.farmer_phone}</td>
                     <td className="table-cell">{item.good_name}</td>
                     <td className="table-cell">{item.quantity}</td>
+                    <td className="table-cell">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {item.units}
+                      </span>
+                    </td>
                     <td className="table-cell">₹{item.price_per_unit}</td>
                     <td className="table-cell">
                       {item.with_commission ? (

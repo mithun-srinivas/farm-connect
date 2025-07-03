@@ -70,7 +70,9 @@ const GenerateSlips = () => {
         if (activeTab === 'farmers') {
           return (
             item.farmer_name?.toLowerCase().includes(searchLower) ||
-            item.good_name?.toLowerCase().includes(searchLower)
+            item.farmer_phone?.toLowerCase().includes(searchLower) ||
+            item.good_name?.toLowerCase().includes(searchLower) ||
+            item.units?.toLowerCase().includes(searchLower)
           )
         } else {
           return (
@@ -127,16 +129,17 @@ const GenerateSlips = () => {
     doc.setFontSize(12)
     doc.setFont('helvetica', 'normal')
     doc.text(`Name: ${goodItem.farmer_name}`, 20, 110)
-    doc.text(`Date of Collection: ${format(new Date(goodItem.created_at), 'MMM dd, yyyy')}`, 20, 125)
+    doc.text(`Phone: ${goodItem.farmer_phone}`, 20, 125)
+    doc.text(`Date of Collection: ${format(new Date(goodItem.created_at), 'MMM dd, yyyy')}`, 20, 140)
     
     // Goods Information
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    doc.text('Goods Information:', 20, 145)
+    doc.text('Goods Information:', 20, 160)
     
     const tableData = [
       ['Good Name', goodItem.good_name],
-      ['Quantity', goodItem.quantity.toString()],
+      ['Quantity', `${goodItem.quantity} ${goodItem.units}`],
       ['Price per Unit', `₹${goodItem.price_per_unit.toFixed(2)}`],
       ['Total Amount', `₹${(goodItem.quantity * goodItem.price_per_unit).toFixed(2)}`],
       ['Commission Applied', goodItem.with_commission ? 'Yes (10%)' : 'No'],
@@ -144,7 +147,7 @@ const GenerateSlips = () => {
     ]
     
     autoTable(doc, {
-      startY: 155,
+      startY: 170,
       head: [],
       body: tableData,
       theme: 'striped',
@@ -377,10 +380,10 @@ const GenerateSlips = () => {
                     <div>
                       <h3 className="font-medium text-gray-900">{item.farmer_name}</h3>
                       <p className="text-sm text-gray-600">
-                        {item.good_name} • {item.quantity} units • ₹{item.final_price.toFixed(2)}
+                        {item.good_name} • {item.quantity} {item.units} • ₹{item.final_price.toFixed(2)}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {format(new Date(item.created_at), 'MMM dd, yyyy')}
+                        {item.farmer_phone} • {format(new Date(item.created_at), 'MMM dd, yyyy')}
                         {item.with_commission && (
                           <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                             With Commission

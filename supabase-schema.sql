@@ -19,8 +19,10 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
 CREATE TABLE IF NOT EXISTS public.farmers_goods (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     farmer_name TEXT NOT NULL,
+    farmer_phone TEXT NOT NULL,
     good_name TEXT NOT NULL,
     quantity DECIMAL(10,2) NOT NULL CHECK (quantity > 0),
+    units TEXT NOT NULL CHECK (units IN ('Kg', 'Box', 'Bags')),
     price_per_unit DECIMAL(10,2) NOT NULL CHECK (price_per_unit > 0),
     with_commission BOOLEAN DEFAULT FALSE,
     final_price DECIMAL(10,2) NOT NULL CHECK (final_price >= 0),
@@ -45,7 +47,9 @@ CREATE TABLE IF NOT EXISTS public.customers (
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_farmers_goods_created_at ON public.farmers_goods(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_farmers_goods_farmer_name ON public.farmers_goods(farmer_name);
+CREATE INDEX IF NOT EXISTS idx_farmers_goods_farmer_phone ON public.farmers_goods(farmer_phone);
 CREATE INDEX IF NOT EXISTS idx_farmers_goods_good_name ON public.farmers_goods(good_name);
+CREATE INDEX IF NOT EXISTS idx_farmers_goods_units ON public.farmers_goods(units);
 CREATE INDEX IF NOT EXISTS idx_farmers_goods_user_id ON public.farmers_goods(user_id);
 
 CREATE INDEX IF NOT EXISTS idx_customers_created_at ON public.customers(created_at DESC);
@@ -144,12 +148,12 @@ CREATE TRIGGER on_auth_user_created
 
 /*
 -- Sample farmers_goods data
-INSERT INTO public.farmers_goods (farmer_name, good_name, quantity, price_per_unit, with_commission, final_price) VALUES
-('John Smith', 'Wheat', 100, 5.50, true, 495.00),
-('Mary Johnson', 'Corn', 150, 3.20, false, 480.00),
-('Bob Wilson', 'Rice', 80, 7.25, true, 522.00),
-('Sarah Davis', 'Soybeans', 120, 6.80, false, 816.00),
-('Tom Brown', 'Barley', 90, 4.75, true, 384.75);
+INSERT INTO public.farmers_goods (farmer_name, farmer_phone, good_name, quantity, units, price_per_unit, with_commission, final_price) VALUES
+('John Smith', '+91-9876543210', 'Wheat', 100, 'Kg', 5.50, true, 495.00),
+('Mary Johnson', '+91-9876543211', 'Corn', 150, 'Bags', 3.20, false, 480.00),
+('Bob Wilson', '+91-9876543212', 'Rice', 80, 'Kg', 7.25, true, 522.00),
+('Sarah Davis', '+91-9876543213', 'Soybeans', 120, 'Box', 6.80, false, 816.00),
+('Tom Brown', '+91-9876543214', 'Barley', 90, 'Kg', 4.75, true, 384.75);
 
 -- Sample customers data
 INSERT INTO public.customers (customer_name, phone, address, goods_purchased, price) VALUES
@@ -164,8 +168,10 @@ INSERT INTO public.customers (customer_name, phone, address, goods_purchased, pr
 CREATE OR REPLACE VIEW public.goods_summary AS
 SELECT 
     farmer_name,
+    farmer_phone,
     good_name,
     quantity,
+    units,
     price_per_unit,
     with_commission,
     final_price,
@@ -212,6 +218,30 @@ GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT SELECT ON ALL VIEWS IN SCHEMA public TO authenticated;
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+
+-- Migration to add new columns to existing farmers_goods table
+-- Run this if you already have data in your farmers_goods table
+ALTER TABLE public.farmers_goods 
+ADD COLUMN IF NOT EXISTS farmer_phone TEXT,
+ADD COLUMN IF NOT EXISTS units TEXT;
+
+-- Set default values for existing records (you may need to update these manually)
+UPDATE public.farmers_goods 
+SET farmer_phone = '+91-0000000000' 
+WHERE farmer_phone IS NULL;
+
+UPDATE public.farmers_goods 
+SET units = 'Kg' 
+WHERE units IS NULL;
+
+-- Now add the constraints
+ALTER TABLE public.farmers_goods 
+ALTER COLUMN farmer_phone SET NOT NULL,
+ALTER COLUMN units SET NOT NULL;
+
+-- Add the constraint for units
+ALTER TABLE public.farmers_goods 
+ADD CONSTRAINT check_units CHECK (units IN ('Kg', 'Box', 'Bags'));
 
 -- Final notes:
 -- 1. Make sure to set up your Supabase project first

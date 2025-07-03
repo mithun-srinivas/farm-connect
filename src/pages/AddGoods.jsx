@@ -7,8 +7,10 @@ const AddGoods = () => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     farmer_name: '',
+    farmer_phone: '',
     good_name: '',
     quantity: '',
+    units: 'Kg',
     price_per_unit: '',
     with_commission: false
   })
@@ -45,8 +47,14 @@ const AddGoods = () => {
 
     try {
       // Validate form data
-      if (!formData.farmer_name || !formData.good_name || !formData.quantity || !formData.price_per_unit) {
+      if (!formData.farmer_name || !formData.farmer_phone || !formData.good_name || !formData.quantity || !formData.units || !formData.price_per_unit) {
         throw new Error('All fields are required')
+      }
+
+      // Validate phone number format
+      const phoneRegex = /^[\d\s\-\+\(\)]+$/
+      if (!phoneRegex.test(formData.farmer_phone)) {
+        throw new Error('Please enter a valid phone number')
       }
 
       if (parseFloat(formData.quantity) <= 0) {
@@ -64,8 +72,10 @@ const AddGoods = () => {
         .insert([
           {
             farmer_name: formData.farmer_name.trim(),
+            farmer_phone: formData.farmer_phone.trim(),
             good_name: formData.good_name.trim(),
             quantity: parseFloat(formData.quantity),
+            units: formData.units,
             price_per_unit: parseFloat(formData.price_per_unit),
             with_commission: formData.with_commission,
             final_price: finalPrice,
@@ -80,8 +90,10 @@ const AddGoods = () => {
       // Reset form
       setFormData({
         farmer_name: '',
+        farmer_phone: '',
         good_name: '',
         quantity: '',
+        units: 'Kg',
         price_per_unit: '',
         with_commission: false
       })
@@ -152,6 +164,23 @@ const AddGoods = () => {
             />
           </div>
 
+          {/* Farmer Phone */}
+          <div>
+            <label htmlFor="farmer_phone" className="form-label">
+              Farmer Phone Number *
+            </label>
+            <input
+              type="tel"
+              id="farmer_phone"
+              name="farmer_phone"
+              value={formData.farmer_phone}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="Enter farmer's phone number (e.g., +91-9876543210)"
+              required
+            />
+          </div>
+
           {/* Good Name */}
           <div>
             <label htmlFor="good_name" className="form-label">
@@ -169,7 +198,7 @@ const AddGoods = () => {
             />
           </div>
 
-          {/* Quantity and Price */}
+          {/* Quantity and Units */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="quantity" className="form-label">
@@ -189,22 +218,41 @@ const AddGoods = () => {
               />
             </div>
             <div>
-              <label htmlFor="price_per_unit" className="form-label">
-                Price per Unit (₹) *
+              <label htmlFor="units" className="form-label">
+                Units *
               </label>
-              <input
-                type="number"
-                id="price_per_unit"
-                name="price_per_unit"
-                value={formData.price_per_unit}
+              <select
+                id="units"
+                name="units"
+                value={formData.units}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Enter price per unit"
-                min="0"
-                step="0.01"
                 required
-              />
+              >
+                <option value="Kg">Kg</option>
+                <option value="Box">Box</option>
+                <option value="Bags">Bags</option>
+              </select>
             </div>
+          </div>
+
+          {/* Price per Unit */}
+          <div>
+            <label htmlFor="price_per_unit" className="form-label">
+              Price per Unit (₹) *
+            </label>
+            <input
+              type="number"
+              id="price_per_unit"
+              name="price_per_unit"
+              value={formData.price_per_unit}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="Enter price per unit"
+              min="0"
+              step="0.01"
+              required
+            />
           </div>
 
           {/* Commission Checkbox */}
